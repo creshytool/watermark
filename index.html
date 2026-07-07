@@ -1,0 +1,800 @@
+<div class="wm-tool">
+
+<h3>Watermark Adder</h3>
+
+<div class="drop-area" id="dropArea">
+    <strong>Upload Images</strong><br>
+    <small>Drag &amp; Drop or Click (multiple files supported)</small>
+    <input type="file" id="fileIn" multiple accept="image/*" hidden>
+</div>
+
+<div class="thumb-bar" id="thumbBar"></div>
+
+<div class="file-actions">
+    <span id="fileCount">0 images loaded</span>
+    <button class="btn2 sm" onclick="clearAll()">Clear All</button>
+    <button class="btn2 sm" onclick="removeCurrent()">Remove Current</button>
+</div>
+
+<div class="settings">
+
+    <div class="control">
+        <label>Watermark Text</label>
+        <input id="wmText" value="© Your Brand">
+    </div>
+
+    <div class="control">
+        <label>Type</label>
+        <select id="wmType">
+            <option value="text">Text</option>
+            <option value="image">Logo Image</option>
+            <option value="both">Text + Logo</option>
+        </select>
+    </div>
+
+    <div class="control">
+        <label>Font Family</label>
+        <select id="wmFont">
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+            <option value="'Courier New'">Courier New</option>
+            <option value="Verdana">Verdana</option>
+            <option value="'Times New Roman'">Times New Roman</option>
+        </select>
+    </div>
+
+    <div class="control">
+        <label>Style</label>
+        <div class="toggle-row">
+            <button type="button" class="toggle-btn" id="boldBtn" onclick="toggleStyle('bold')">Bold</button>
+            <button type="button" class="toggle-btn" id="italicBtn" onclick="toggleStyle('italic')">Italic</button>
+        </div>
+    </div>
+
+    <div class="control">
+        <label>Opacity</label>
+        <input type="range" min="0.1" max="1" step="0.1" id="wmOpacity" value="0.5">
+    </div>
+
+    <div class="control">
+        <label>Font Size</label>
+        <input type="number" id="wmSize" value="40">
+    </div>
+
+    <div class="control">
+        <label>Text Color</label>
+        <input type="color" id="wmColor" value="#ffffff">
+    </div>
+
+    <div class="control">
+        <label>Rotation (°)</label>
+        <input type="number" id="wmRotate" value="0">
+    </div>
+
+    <div class="control">
+        <label>Outline</label>
+        <div class="toggle-row">
+            <button type="button" class="toggle-btn" id="strokeBtn" onclick="toggleStroke()">Off</button>
+            <input type="color" id="wmStrokeColor" value="#000000">
+        </div>
+    </div>
+
+    <div class="control">
+        <label>Shadow</label>
+        <button type="button" class="toggle-btn full" id="shadowBtn" onclick="toggleShadow()">Off</button>
+    </div>
+
+    <div class="control">
+        <label>Position</label>
+        <select id="wmPos">
+            <option value="center">Center</option>
+            <option value="tl">Top Left</option>
+            <option value="tr">Top Right</option>
+            <option value="bl">Bottom Left</option>
+            <option value="br">Bottom Right</option>
+            <option value="tile">Tile (Repeat)</option>
+            <option value="custom">Custom (Drag on Image)</option>
+        </select>
+    </div>
+
+    <div class="control" id="tileSpacingBox" style="display:none;">
+        <label>Tile Spacing</label>
+        <input type="number" id="tileSpacing" value="150">
+    </div>
+
+    <div class="control" id="logoSizeBox" style="display:none;">
+        <label>Logo Size (px)</label>
+        <input type="number" id="logoSize" value="100">
+    </div>
+
+    <div class="control" id="logoUploadBox" style="display:none;">
+        <label>Upload Logo</label>
+        <input type="file" id="logoIn" accept="image/*">
+    </div>
+
+</div>
+
+<p class="drag-hint">Tip: Click &amp; drag directly on the preview image below to place the watermark exactly where you want.</p>
+
+<div id="previewBox">
+    <canvas id="previewCanvas"></canvas>
+</div>
+
+<div class="nav">
+    <button class="btn2" onclick="prevImg()">◀ Prev</button>
+    <span id="imgCounter">0 / 0</span>
+    <button class="btn2" onclick="nextImg()">Next ▶</button>
+</div>
+
+<div class="settings output-settings">
+    <div class="control">
+        <label>Output Format</label>
+        <select id="outFormat">
+            <option value="jpeg">JPEG</option>
+            <option value="png">PNG</option>
+        </select>
+    </div>
+    <div class="control">
+        <label>Quality</label>
+        <input type="range" min="0.3" max="1" step="0.1" id="outQuality" value="0.9">
+    </div>
+</div>
+
+<div class="progress"><div class="progress-bar" id="bar"></div></div>
+
+<div class="action-row">
+    <button class="btn" onclick="downloadAll()">Download All (ZIP)</button>
+    <button class="btn2" onclick="downloadOne()">Download Current</button>
+    <button class="btn2" onclick="resetSettings()">Reset Settings</button>
+</div>
+
+</div>
+
+<style>
+.wm-tool, .wm-tool *{
+    box-sizing:border-box !important;
+}
+
+.wm-tool{
+    --brand:#6366f1;
+    --brand-dark:#4f46e5;
+    --accent:#f43f5e;
+    --bg:#ffffff;
+    --soft:#f1f5f9;
+    --border:#e2e8f0;
+    --text:#1e293b;
+
+    max-width:650px !important;
+    width:100% !important;
+    margin:20px auto !important;
+    font-family:Inter,system-ui,sans-serif !important;
+    background:var(--bg) !important;
+    border:1px solid var(--border) !important;
+    border-radius:14px !important;
+    padding:20px !important;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08) !important;
+    color:var(--text) !important;
+    text-align:left !important;
+}
+
+.wm-tool h3{
+    margin:0 0 15px 0 !important;
+    font-size:19px !important;
+    font-weight:700 !important;
+    color:var(--brand) !important;
+}
+
+.wm-tool .drop-area{
+    border:2px dashed #cbd5e1 !important;
+    padding:25px !important;
+    border-radius:10px !important;
+    background:#f8fafc !important;
+    text-align:center !important;
+    cursor:pointer !important;
+    transition:.2s !important;
+    color:var(--text) !important;
+}
+.wm-tool .drop-area.dragover{background:#e0e7ff !important;border-color:var(--brand) !important;}
+
+.wm-tool .thumb-bar{
+    display:flex !important;
+    gap:8px !important;
+    overflow-x:auto !important;
+    margin-top:12px !important;
+    padding-bottom:4px !important;
+}
+.wm-tool .thumb-bar:empty{margin-top:0 !important;}
+.wm-tool .thumb-item{
+    position:relative !important;
+    flex:0 0 auto !important;
+    width:56px !important;
+    height:56px !important;
+    border-radius:8px !important;
+    overflow:hidden !important;
+    border:2px solid var(--border) !important;
+    cursor:pointer !important;
+}
+.wm-tool .thumb-item.active{border-color:var(--brand) !important;}
+.wm-tool .thumb-item img{
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+    display:block !important;
+}
+.wm-tool .thumb-remove{
+    position:absolute !important;
+    top:0 !important;
+    right:0 !important;
+    background:rgba(0,0,0,0.65) !important;
+    color:#fff !important;
+    border:none !important;
+    width:18px !important;
+    height:18px !important;
+    line-height:18px !important;
+    font-size:11px !important;
+    padding:0 !important;
+    cursor:pointer !important;
+    border-radius:0 0 0 6px !important;
+}
+
+.wm-tool .file-actions{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:8px !important;
+    margin-top:10px !important;
+    font-size:12px !important;
+    color:#64748b !important;
+    flex-wrap:wrap !important;
+}
+
+.wm-tool .settings{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:12px !important;
+    margin-top:15px !important;
+    background:var(--soft) !important;
+    padding:12px !important;
+    border-radius:10px !important;
+}
+
+.wm-tool .control label{
+    font-size:11px !important;
+    font-weight:700 !important;
+    text-transform:uppercase !important;
+    color:#64748b !important;
+    display:block !important;
+    margin-bottom:4px !important;
+}
+
+.wm-tool .control input,
+.wm-tool .control select{
+    width:100% !important;
+    padding:7px !important;
+    border:1px solid var(--border) !important;
+    border-radius:6px !important;
+    font-size:13px !important;
+    background:#fff !important;
+    color:var(--text) !important;
+    margin:0 !important;
+}
+
+.wm-tool .control input[type="color"]{
+    padding:2px !important;
+    height:32px !important;
+    cursor:pointer !important;
+}
+
+.wm-tool .toggle-row{
+    display:flex !important;
+    gap:6px !important;
+    align-items:center !important;
+}
+
+.wm-tool .toggle-btn{
+    flex:1 1 auto !important;
+    background:#e2e8f0 !important;
+    color:var(--text) !important;
+    border:1px solid var(--border) !important;
+    border-radius:6px !important;
+    padding:7px !important;
+    font-size:12px !important;
+    font-weight:600 !important;
+    cursor:pointer !important;
+}
+.wm-tool .toggle-btn.full{width:100% !important;}
+.wm-tool .toggle-btn.active{
+    background:var(--brand) !important;
+    color:#fff !important;
+    border-color:var(--brand) !important;
+}
+
+.wm-tool .drag-hint{
+    font-size:12px !important;
+    color:#64748b !important;
+    margin:10px 0 0 0 !important;
+}
+
+.wm-tool #previewBox{
+    margin-top:10px !important;
+    background:#eee !important;
+    border-radius:10px !important;
+    overflow:hidden !important;
+    height:280px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    position:relative !important;
+    touch-action:none !important;
+}
+
+.wm-tool #previewCanvas{
+    max-width:100% !important;
+    max-height:100% !important;
+    cursor:move !important;
+}
+
+.wm-tool .nav{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    margin-top:10px !important;
+    gap:8px !important;
+}
+.wm-tool .nav span{font-size:12px !important;color:#64748b !important;font-weight:600 !important;}
+
+.wm-tool button{
+    border:none !important;
+    cursor:pointer !important;
+    border-radius:8px !important;
+    padding:10px !important;
+    font-weight:600 !important;
+    font-size:13px !important;
+}
+.wm-tool button.sm{padding:6px 10px !important;font-size:11px !important;}
+
+.wm-tool .btn{
+    background:var(--brand) !important;
+    color:#fff !important;
+}
+.wm-tool .btn:hover{background:var(--brand-dark) !important;}
+
+.wm-tool .btn2{
+    background:#e2e8f0 !important;
+    color:var(--text) !important;
+}
+.wm-tool .btn2:hover{background:#cbd5e1 !important;}
+
+.wm-tool .output-settings{margin-top:15px !important;}
+
+.wm-tool .progress{
+    height:8px !important;
+    background:#e5e7eb !important;
+    border-radius:10px !important;
+    overflow:hidden !important;
+    margin-top:14px !important;
+}
+
+.wm-tool .progress-bar{
+    height:100% !important;
+    width:0% !important;
+    background:var(--accent) !important;
+    transition:.2s !important;
+}
+
+.wm-tool .action-row{
+    display:flex !important;
+    gap:10px !important;
+    margin-top:10px !important;
+    flex-wrap:wrap !important;
+}
+.wm-tool .action-row button{flex:1 1 auto !important;min-width:120px !important;}
+
+@media(max-width:600px){
+    .wm-tool .settings{grid-template-columns:1fr !important;}
+    .wm-tool .action-row button{width:100% !important;}
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+
+<script>
+(function(){
+
+let files = [];
+let index = 0;
+let logoImg = null;
+let imgCache = {};
+
+let isBold = false;
+let isItalic = false;
+let strokeOn = false;
+let shadowOn = false;
+
+let customX = 0;
+let customY = 0;
+let isDraggingWM = false;
+let dragStartClientX = 0, dragStartClientY = 0;
+let dragStartCustomX = 0, dragStartCustomY = 0;
+
+const canvas = document.getElementById("previewCanvas");
+const ctx = canvas.getContext("2d");
+
+document.getElementById("fileIn").onchange = e=>{
+    addFiles([...e.target.files]);
+};
+
+document.getElementById("logoIn").onchange = e=>{
+    if(!e.target.files[0]) return;
+    const r = new FileReader();
+    r.onload = ev=>{
+        logoImg = new Image();
+        logoImg.onload = ()=> render();
+        logoImg.src = ev.target.result;
+    };
+    r.readAsDataURL(e.target.files[0]);
+};
+
+const drop = document.getElementById("dropArea");
+drop.onclick = ()=> document.getElementById("fileIn").click();
+
+drop.ondragover = e=>{
+    e.preventDefault();
+    drop.classList.add("dragover");
+};
+drop.ondragleave = ()=> drop.classList.remove("dragover");
+drop.ondrop = e=>{
+    e.preventDefault();
+    drop.classList.remove("dragover");
+    addFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")));
+};
+
+function addFiles(newFiles){
+    files = files.concat(newFiles);
+    index = files.length - newFiles.length;
+    renderThumbs();
+    render();
+}
+
+function clearAll(){
+    files = [];
+    index = 0;
+    renderThumbs();
+    render();
+}
+
+function removeCurrent(){
+    if(!files.length) return;
+    files.splice(index,1);
+    if(index >= files.length) index = files.length - 1;
+    renderThumbs();
+    render();
+}
+
+function renderThumbs(){
+    const bar = document.getElementById("thumbBar");
+    bar.innerHTML = "";
+    files.forEach((f,i)=>{
+        const item = document.createElement("div");
+        item.className = "thumb-item" + (i === index ? " active" : "");
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(f);
+        item.appendChild(img);
+
+        const rm = document.createElement("button");
+        rm.className = "thumb-remove";
+        rm.textContent = "x";
+        rm.onclick = (e)=>{
+            e.stopPropagation();
+            files.splice(i,1);
+            if(index >= files.length) index = files.length - 1;
+            if(index < 0) index = 0;
+            renderThumbs();
+            render();
+        };
+        item.appendChild(rm);
+
+        item.onclick = ()=>{ index = i; render(); renderThumbs(); };
+        bar.appendChild(item);
+    });
+    document.getElementById("fileCount").textContent = files.length + " image" + (files.length===1?"":"s") + " loaded";
+    document.getElementById("imgCounter").textContent = (files.length ? index+1 : 0) + " / " + files.length;
+}
+
+function prevImg(){ if(index>0){index--; render(); renderThumbs();} }
+function nextImg(){ if(index<files.length-1){index++; render(); renderThumbs();} }
+
+function loadImage(file){
+    return new Promise(res=>{
+        const r = new FileReader();
+        r.onload = e=>{
+            const img = new Image();
+            img.onload = ()=> res(img);
+            img.src = e.target.result;
+        };
+        r.readAsDataURL(file);
+    });
+}
+
+async function render(){
+    document.getElementById("imgCounter").textContent = (files.length ? index+1 : 0) + " / " + files.length;
+    if(!files.length){
+        canvas.width = 400; canvas.height = 260;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Upload images to preview watermark", 200, 130);
+        return;
+    }
+
+    const img = await loadImage(files[index]);
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0);
+
+    drawWatermark(ctx, canvas.width, canvas.height);
+}
+
+function getSettings(){
+    let text = document.getElementById("wmText").value;
+    text = text.replace(/\{date\}/gi, new Date().toLocaleDateString());
+
+    return {
+        text,
+        type: document.getElementById("wmType").value,
+        font: document.getElementById("wmFont").value,
+        opacity: parseFloat(document.getElementById("wmOpacity").value),
+        size: parseInt(document.getElementById("wmSize").value) || 40,
+        color: document.getElementById("wmColor").value,
+        rotate: parseInt(document.getElementById("wmRotate").value) || 0,
+        pos: document.getElementById("wmPos").value,
+        tileSpacing: parseInt(document.getElementById("tileSpacing").value) || 150,
+        logoSize: parseInt(document.getElementById("logoSize").value) || 100,
+        strokeColor: document.getElementById("wmStrokeColor").value
+    };
+}
+
+function setFont(c, s){
+    let weight = isBold ? "bold " : "";
+    let style = isItalic ? "italic " : "";
+    c.font = `${style}${weight}${s.size}px ${s.font}`;
+}
+
+function drawSingleMark(c, s){
+    if(s.type === "text" || s.type === "both"){
+        setFont(c, s);
+        if(shadowOn){
+            c.shadowColor = "rgba(0,0,0,0.5)";
+            c.shadowBlur = s.size/6;
+            c.shadowOffsetX = 2;
+            c.shadowOffsetY = 2;
+        } else {
+            c.shadowColor = "transparent";
+            c.shadowBlur = 0;
+        }
+        if(strokeOn){
+            c.strokeStyle = s.strokeColor;
+            c.lineWidth = Math.max(1, s.size/18);
+            c.strokeText(s.text, 0, 0);
+        }
+        c.fillStyle = s.color;
+        c.fillText(s.text, 0, 0);
+    }
+    if((s.type === "image" || s.type === "both") && logoImg){
+        let ly = s.type === "both" ? s.logoSize/2 + 10 : 0;
+        c.drawImage(logoImg, -s.logoSize/2, -(s.logoSize/2) - (s.type==="both" ? s.size : 0), s.logoSize, s.logoSize);
+    }
+}
+
+function drawWatermark(c, w, h){
+    const s = getSettings();
+    c.save();
+    c.globalAlpha = s.opacity;
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+
+    if(s.pos === "tile"){
+        for(let y = -s.tileSpacing; y < h + s.tileSpacing; y += s.tileSpacing){
+            for(let x = -s.tileSpacing; x < w + s.tileSpacing; x += s.tileSpacing){
+                c.save();
+                c.translate(x, y);
+                c.rotate(s.rotate * Math.PI/180);
+                drawSingleMark(c, s);
+                c.restore();
+            }
+        }
+        c.restore();
+        return;
+    }
+
+    let x = w/2, y = h/2;
+    const padding = Math.max(20, s.size * 0.6);
+
+    if(s.pos === "tl"){ x = padding; y = padding; c.textAlign = "left"; }
+    else if(s.pos === "tr"){ x = w - padding; y = padding; c.textAlign = "right"; }
+    else if(s.pos === "bl"){ x = padding; y = h - padding; c.textAlign = "left"; }
+    else if(s.pos === "br"){ x = w - padding; y = h - padding; c.textAlign = "right"; }
+    else if(s.pos === "custom"){ x = w/2 + customX; y = h/2 + customY; }
+
+    c.translate(x, y);
+    c.rotate(s.rotate * Math.PI/180);
+    drawSingleMark(c, s);
+
+    c.restore();
+}
+
+// ---- drag to reposition (mouse + touch) ----
+function getClient(e){
+    if(e.touches && e.touches.length) return {x:e.touches[0].clientX, y:e.touches[0].clientY};
+    return {x:e.clientX, y:e.clientY};
+}
+
+function dragStart(e){
+    if(!files.length) return;
+    e.preventDefault();
+    isDraggingWM = true;
+    const p = getClient(e);
+    dragStartClientX = p.x;
+    dragStartClientY = p.y;
+    dragStartCustomX = customX;
+    dragStartCustomY = customY;
+}
+
+function dragMove(e){
+    if(!isDraggingWM) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const p = getClient(e);
+
+    customX = dragStartCustomX + (p.x - dragStartClientX) * scaleX;
+    customY = dragStartCustomY + (p.y - dragStartClientY) * scaleY;
+
+    if(document.getElementById("wmPos").value !== "custom"){
+        document.getElementById("wmPos").value = "custom";
+        toggleFieldVisibility();
+    }
+    render();
+}
+
+function dragEnd(){ isDraggingWM = false; }
+
+canvas.addEventListener("mousedown", dragStart);
+window.addEventListener("mousemove", dragMove);
+window.addEventListener("mouseup", dragEnd);
+canvas.addEventListener("touchstart", dragStart, {passive:false});
+canvas.addEventListener("touchmove", dragMove, {passive:false});
+canvas.addEventListener("touchend", dragEnd);
+
+// ---- toggles ----
+window.toggleStyle = function(kind){
+    if(kind === "bold"){
+        isBold = !isBold;
+        document.getElementById("boldBtn").classList.toggle("active", isBold);
+    } else {
+        isItalic = !isItalic;
+        document.getElementById("italicBtn").classList.toggle("active", isItalic);
+    }
+    render();
+};
+
+window.toggleStroke = function(){
+    strokeOn = !strokeOn;
+    document.getElementById("strokeBtn").textContent = strokeOn ? "On" : "Off";
+    document.getElementById("strokeBtn").classList.toggle("active", strokeOn);
+    render();
+};
+
+window.toggleShadow = function(){
+    shadowOn = !shadowOn;
+    document.getElementById("shadowBtn").textContent = shadowOn ? "On" : "Off";
+    document.getElementById("shadowBtn").classList.toggle("active", shadowOn);
+    render();
+};
+
+function toggleFieldVisibility(){
+    const type = document.getElementById("wmType").value;
+    const pos = document.getElementById("wmPos").value;
+    document.getElementById("logoSizeBox").style.display = (type === "image" || type === "both") ? "block" : "none";
+    document.getElementById("logoUploadBox").style.display = (type === "image" || type === "both") ? "block" : "none";
+    document.getElementById("tileSpacingBox").style.display = (pos === "tile") ? "block" : "none";
+}
+
+document.getElementById("wmType").addEventListener("change", ()=>{ toggleFieldVisibility(); render(); });
+document.getElementById("wmPos").addEventListener("change", ()=>{ toggleFieldVisibility(); render(); });
+toggleFieldVisibility();
+
+// ---- reset ----
+window.resetSettings = function(){
+    document.getElementById("wmText").value = "© Your Brand";
+    document.getElementById("wmType").value = "text";
+    document.getElementById("wmFont").value = "Arial";
+    document.getElementById("wmOpacity").value = 0.5;
+    document.getElementById("wmSize").value = 40;
+    document.getElementById("wmColor").value = "#ffffff";
+    document.getElementById("wmRotate").value = 0;
+    document.getElementById("wmPos").value = "center";
+    document.getElementById("tileSpacing").value = 150;
+    document.getElementById("logoSize").value = 100;
+    document.getElementById("wmStrokeColor").value = "#000000";
+    document.getElementById("outFormat").value = "jpeg";
+    document.getElementById("outQuality").value = 0.9;
+
+    isBold = false; isItalic = false; strokeOn = false; shadowOn = false;
+    customX = 0; customY = 0;
+
+    document.getElementById("boldBtn").classList.remove("active");
+    document.getElementById("italicBtn").classList.remove("active");
+    document.getElementById("strokeBtn").classList.remove("active");
+    document.getElementById("strokeBtn").textContent = "Off";
+    document.getElementById("shadowBtn").classList.remove("active");
+    document.getElementById("shadowBtn").textContent = "Off";
+
+    toggleFieldVisibility();
+    render();
+};
+
+// ---- download helpers ----
+function getMimeAndExt(){
+    const fmt = document.getElementById("outFormat").value;
+    return fmt === "png" ? {mime:"image/png", ext:"png"} : {mime:"image/jpeg", ext:"jpg"};
+}
+
+function downloadCanvas(c, fileName){
+    const {mime, ext} = getMimeAndExt();
+    const quality = parseFloat(document.getElementById("outQuality").value);
+    const link = document.createElement("a");
+    link.download = "wm_" + fileName.replace(/\.[^/.]+$/, "") + "." + ext;
+    link.href = c.toDataURL(mime, quality);
+    link.click();
+}
+
+window.downloadOne = function(){
+    if(!files.length) return;
+    downloadCanvas(canvas, files[index].name);
+};
+
+window.downloadAll = async function(){
+    if(!files.length) return;
+
+    const zip = new JSZip();
+    const bar = document.getElementById("bar");
+    const {mime, ext} = getMimeAndExt();
+    const quality = parseFloat(document.getElementById("outQuality").value);
+
+    for(let i=0; i<files.length; i++){
+        const img = await loadImage(files[i]);
+        const temp = document.createElement("canvas");
+        const tctx = temp.getContext("2d");
+        temp.width = img.width;
+        temp.height = img.height;
+        tctx.drawImage(img, 0, 0);
+        drawWatermark(tctx, temp.width, temp.height);
+
+        const blob = await new Promise(r => temp.toBlob(r, mime, quality));
+        zip.file("wm_" + files[i].name.replace(/\.[^/.]+$/, "") + "." + ext, blob);
+
+        bar.style.width = ((i+1)/files.length) * 100 + "%";
+    }
+
+    const content = await zip.generateAsync({type:"blob"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(content);
+    a.download = "watermarked.zip";
+    a.click();
+
+    bar.style.width = "0%";
+};
+
+document.querySelectorAll(".wm-tool .control input, .wm-tool .control select").forEach(el=>{
+    el.addEventListener("input", render);
+});
+
+render();
+
+})();
+</script>
